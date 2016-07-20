@@ -1,10 +1,12 @@
 module Table exposing
   ( view
+  , config, stringColumn, intColumn, floatColumn
   , State, initialSort
-  , Config, config
-  , Column, stringColumn, intColumn, floatColumn, column
+  , Column, customColumn, veryCustomColumn
   , Sorter, unsortable, increasingBy, decreasingBy
   , increasingOrDecreasingBy, decreasingOrIncreasingBy
+  , Config, customConfig
+  , Customizations, HtmlDetails, Status(..)
   )
 
 {-|
@@ -20,12 +22,15 @@ I recommend checking out the [examples][] to get a feel for how it works.
 [examples]: https://github.com/evancz/elm-tables/tree/master/examples
 
 # View
+
 @docs view
 
 # Configuration
+
 @docs config, stringColumn, intColumn, floatColumn
 
 # State
+
 @docs State, initialSort
 
 
@@ -44,8 +49,7 @@ is not that crazy.
 
 ## Custom Tables
 
-@docs Config, customConfig,
-  Customizations, HtmlDetails, Status, defaultCustomizations
+@docs Config, customConfig, Customizations, HtmlDetails, Status
 -}
 
 import Html exposing (Html, Attribute)
@@ -53,6 +57,7 @@ import Html.Attributes as Attr
 import Html.Events as E
 import Html.Keyed as Keyed
 import Html.Lazy exposing (lazy2, lazy3)
+import Json.Decode as Json
 
 
 
@@ -91,7 +96,7 @@ type Config data msg =
   Config
     { toId : data -> String
     , toMsg : State -> msg
-    , columns : List (Column data msg)
+    , columns : List (ColumnData data msg)
     , customizations : Customizations data msg
     }
 
@@ -144,6 +149,8 @@ config { toId, toMsg, columns } =
     }
 
 
+{-| Just like `config` but you can specify a bunch of table customizations.
+-}
 customConfig
   : { toId : data -> String
     , toMsg : State -> msg
@@ -171,7 +178,7 @@ high that I could not see how to provide the full functionality *and* make it
 impossible to do bad stuff. So just be aware of that, and share any stories
 you have. Stories make it possible to design better!
 -}
-type alias Cusomizations data msg =
+type alias Customizations data msg =
   { tableAttrs : List (Attribute msg)
   , caption : Maybe (HtmlDetails msg)
   , thead : List (String, Status, Attribute msg) -> HtmlDetails msg
@@ -213,20 +220,20 @@ simpleTheadHelp (name, status, onClick) =
     content =
       case status of
         Unsortable ->
-          [ text name ]
+          [ Html.text name ]
 
         Sortable selected ->
-          [ text name
+          [ Html.text name
           , if selected then darkGrey "↓" else lightGrey "↓"
           ]
 
-        Reversable Nothing ->
-          [ text name
+        Reversible Nothing ->
+          [ Html.text name
           , lightGrey "↕"
           ]
 
-        Reversable (Just isReversed) ->
-          [ text name
+        Reversible (Just isReversed) ->
+          [ Html.text name
           , darkGrey (if isReversed then "↑" else "↓")
           ]
   in
@@ -235,23 +242,38 @@ simpleTheadHelp (name, status, onClick) =
 
 darkGrey : String -> Html msg
 darkGrey symbol =
-  Html.span [ Attr.style [("color", "#ccc")] ] [ Html.text (" " ++ symbol) ]
+  Html.span [ Attr.style [("color", "#555")] ] [ Html.text (" " ++ symbol) ]
 
 
 lightGrey : String -> Html msg
 lightGrey symbol =
-  Html.span [ Attr.style [("color", "#999")] ] [ Html.text (" " ++ symbol) ]
+  Html.span [ Attr.style [("color", "#ccc")] ] [ Html.text (" " ++ symbol) ]
 
 
-simpleRowAttrs : data -> Attribute msg
+simpleRowAttrs : data -> List (Attribute msg)
 simpleRowAttrs _ =
   []
 
 
+{-| The status of a particular column, for use in the `thead` field of your
+`Customizations`.
+
+  - If the column is unsortable, the status will always be `Unsortable`.
+  - If the column can be sorted in one direction, the status will be `Sortable`.
+    The associated boolean represents whether this column is selected. So it is
+    `True` if the table is currently sorted by this column, and `False` otherwise.
+  - If the column can be sorted in either direction, the status will be `Reversible`.
+    The associated maybe tells you whether this column is selected. It is
+    `Just isReversed` if the table is currently sorted by this column, and
+    `Nothing` otherwise. The `isReversed` boolean lets you know which way it
+    is sorted.
+
+This information lets you do custom header decorations for each scenario.
+-}
 type Status
   = Unsortable
   | Sortable Bool
-  | Reversable (Maybe Bool)
+  | Reversible (Maybe Bool)
 
 
 
@@ -397,21 +419,22 @@ view (Config { toId, toMsg, columns, customizations }) state data =
       sort state columns data
 
     theadDetails =
-      customizations.thead (List.map Debug.crash columns)
+      customizations.thead (List.map (toHeaderInfo state toMsg) columns)
 
     thead =
       Html.thead theadDetails.attributes theadDetails.children
 
     tbody =
-      List.map (viewRow toId columns) sortedData
+      Keyed.node "tbody" customizations.tbodyAttrs <|
+        List.map (viewRow toId columns customizations.rowAttrs) sortedData
 
     withFoot =
       case customizations.tfoot of
         Nothing ->
-          tbody
+          tbody :: []
 
         Just { attributes, children } ->
-          Html.tfoot attributes children :: tbody
+          Html.tfoot attributes children :: tbody :: []
   in
     Html.table customizations.tableAttrs <|
       case customizations.caption of
@@ -422,52 +445,60 @@ view (Config { toId, toMsg, columns, customizations }) state data =
           Html.caption attributes children :: thead :: withFoot
 
 
-viewHeader : List (ColumnData a msg) -> (State -> msg) -> State -> Html msg
-viewHeader columnData toMsg state =
-  Html.tr [] (List.map (lazy3 viewHeaderHelp toMsg state) columnData)
-
-
-viewHeaderHelp : (State -> msg) -> State -> ColumnData a msg -> Html msg
-viewHeaderHelp toMsg state ({name} as column) =
+toHeaderInfo : State -> (State -> msg) -> ColumnData data msg -> ( String, Status, Attribute msg )
+toHeaderInfo (State sortName isReversed) toMsg { name, sorter } =
   let
+    (status, newIsReversed) =
+      case sorter of
+        None ->
+          ( Unsortable, False )
 
-  Html.th
-    [ class (String.join " " classes)
-    , onClick name state toMsg
-    ]
-    [ html
-    ]
+        Increasing _ ->
+          ( Sortable (name == sortName), False )
+
+        Decreasing _ ->
+          ( Sortable (name == sortName), False )
+
+        IncOrDec _ ->
+          if name == sortName then
+            ( Reversible (Just isReversed), not isReversed )
+          else
+            ( Reversible Nothing, False )
+
+        DecOrInc _ ->
+          if name == sortName then
+            ( Reversible (Just isReversed), not isReversed )
+          else
+            ( Reversible Nothing, False )
+  in
+    ( name, status, onClick name newIsReversed toMsg )
 
 
-onClick : String -> State -> (State -> msg) -> Attribute msg
-onClick name (State selectedColumn isReversed) toMsg =
+onClick : String -> Bool -> (State -> msg) -> Attribute msg
+onClick name isReversed toMsg =
   E.on "click" <| Json.map toMsg <|
-    Json.object2
-      State
-      (Json.succed name)
-      (Json.succed (name == selectedColumn && not isReversed)
+    Json.object2 State (Json.succeed name) (Json.succeed isReversed)
 
 
-descendingClass : Attribute msg
-descendingClass =
-  class "elm-table-selected elm-table-descending"
-
-
-ascendingClass : Attribute msg
-ascendingClass =
-  class "elm-table-selected elm-table-ascending"
-
-
-viewRow : (a -> String) -> List (ColumnData a msg) -> a -> ( String, Html msg )
-viewRow toId columnData entry =
-  ( toId entry
-  , lazy2 viewRowHelp columnData entry
+viewRow : (data -> String) -> List (ColumnData data msg) -> (data -> List (Attribute msg)) -> data -> ( String, Html msg )
+viewRow toId columns toRowAttrs data =
+  ( toId data
+  , lazy3 viewRowHelp columns toRowAttrs data
   )
 
 
-viewRowHelp : List (ColumnData a msg) -> a -> Html msg
-viewRowHelp columnData entry =
-  Html.tr [] (List.map (\{toCell} -> Html.td [] [ toCell entry ]) columnData)
+viewRowHelp : List (ColumnData data msg) -> (data -> List (Attribute msg)) -> data -> Html msg
+viewRowHelp columns toRowAttrs data =
+  Html.tr (toRowAttrs data) (List.map (viewCell data) columns)
+
+
+viewCell : data -> ColumnData data msg -> Html msg
+viewCell data {viewData} =
+  let
+    details =
+      viewData data
+  in
+    Html.td details.attributes details.children
 
 
 
@@ -511,7 +542,7 @@ findSorter selectedColumn columnData =
 
     {name, sorter} :: remainingColumnData ->
       if name == selectedColumn then
-        sorter
+        Just sorter
       else
         findSorter selectedColumn remainingColumnData
 

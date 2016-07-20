@@ -25,7 +25,7 @@ type alias Model =
 
 init : List Person -> ( Model, Cmd Msg )
 init people =
-  ( Model people (Table.ascending "Year")
+  ( Model people (Table.initialSort "Year")
   , Cmd.none
   )
 
