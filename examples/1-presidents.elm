@@ -1,5 +1,8 @@
-import Html exposing (Html, div, h1, text)
+import Html exposing (Html, div, h1, input, text)
 import Html.App as App
+import Html.Attributes exposing (placeholder, value)
+import Html.Events exposing (onInput)
+import String
 import Table
 
 
@@ -20,14 +23,20 @@ main =
 type alias Model =
   { people : List Person
   , tableState : Table.State
+  , query : String
   }
 
 
 init : List Person -> ( Model, Cmd Msg )
 init people =
-  ( Model people (Table.initialSort "Year")
-  , Cmd.none
-  )
+  let
+    model =
+      { people = people
+      , tableState = Table.initialSort "Year"
+      , query = ""
+      }
+  in
+    ( model, Cmd.none )
 
 
 
@@ -35,14 +44,22 @@ init people =
 
 
 type Msg
-  = UpdateTableState Table.State
+  = UpdateQuery String
+  | UpdateTableState Table.State
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
+    UpdateQuery newQuery ->
+      ( { model | query = String.toLower newQuery }
+      , Cmd.none
+      )
+
     UpdateTableState newState ->
-      ( Model model.people newState, Cmd.none )
+      ( { model | tableState = newState }
+      , Cmd.none
+      )
 
 
 
@@ -50,11 +67,21 @@ update msg model =
 
 
 view : Model -> Html Msg
-view {people, tableState} =
-  div []
-    [ h1 [] [ text "Birthplaces of U.S. Presidents" ]
-    , Table.view config tableState people
-    ]
+view { people, tableState, query } =
+  let
+    acceptablePeople =
+      List.filter (String.contains query << String.toLower << .name) people
+  in
+    div []
+      [ h1 [] [ text "Birthplaces of U.S. Presidents" ]
+      , input
+          [ value query
+          , placeholder "Search by Name"
+          , onInput UpdateQuery
+          ]
+          []
+      , Table.view config tableState acceptablePeople
+      ]
 
 
 config : Table.Config Person Msg
