@@ -1,6 +1,6 @@
 import Html exposing (Html, div, h1, input, text)
 import Html.App as App
-import Html.Attributes exposing (placeholder, value)
+import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onInput)
 import String
 import Table
@@ -44,19 +44,19 @@ init people =
 
 
 type Msg
-  = UpdateQuery String
-  | UpdateTableState Table.State
+  = SetQuery String
+  | SetTableState Table.State
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
-    UpdateQuery newQuery ->
-      ( { model | query = String.toLower newQuery }
+    SetQuery newQuery ->
+      ( { model | query = newQuery }
       , Cmd.none
       )
 
-    UpdateTableState newState ->
+    SetTableState newState ->
       ( { model | tableState = newState }
       , Cmd.none
       )
@@ -69,17 +69,15 @@ update msg model =
 view : Model -> Html Msg
 view { people, tableState, query } =
   let
+    lowerQuery =
+      String.toLower query
+
     acceptablePeople =
-      List.filter (String.contains query << String.toLower << .name) people
+      List.filter (String.contains lowerQuery << String.toLower << .name) people
   in
     div []
       [ h1 [] [ text "Birthplaces of U.S. Presidents" ]
-      , input
-          [ value query
-          , placeholder "Search by Name"
-          , onInput UpdateQuery
-          ]
-          []
+      , input [ placeholder "Search by Name", onInput SetQuery ] []
       , Table.view config tableState acceptablePeople
       ]
 
@@ -88,7 +86,7 @@ config : Table.Config Person Msg
 config =
   Table.config
     { toId = .name
-    , toMsg = UpdateTableState
+    , toMsg = SetTableState
     , columns =
         [ Table.stringColumn "Name" .name
         , Table.intColumn "Year" .year
