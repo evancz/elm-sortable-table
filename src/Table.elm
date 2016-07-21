@@ -450,31 +450,27 @@ view (Config { toId, toMsg, columns, customizations }) state data =
 
 toHeaderInfo : State -> (State -> msg) -> ColumnData data msg -> ( String, Status, Attribute msg )
 toHeaderInfo (State sortName isReversed) toMsg { name, sorter } =
-  let
-    (status, newIsReversed) =
-      case sorter of
-        None ->
-          ( Unsortable, False )
+  case sorter of
+    None ->
+      ( name, Unsortable, onClick sortName isReversed toMsg )
 
-        Increasing _ ->
-          ( Sortable (name == sortName), False )
+    Increasing _ ->
+      ( name, Sortable (name == sortName), onClick name False toMsg )
 
-        Decreasing _ ->
-          ( Sortable (name == sortName), False )
+    Decreasing _ ->
+      ( name, Sortable (name == sortName), onClick name False toMsg )
 
-        IncOrDec _ ->
-          if name == sortName then
-            ( Reversible (Just isReversed), not isReversed )
-          else
-            ( Reversible Nothing, False )
+    IncOrDec _ ->
+      if name == sortName then
+        ( name, Reversible (Just isReversed), onClick name (not isReversed) toMsg )
+      else
+        ( name, Reversible Nothing, onClick name False toMsg )
 
-        DecOrInc _ ->
-          if name == sortName then
-            ( Reversible (Just isReversed), not isReversed )
-          else
-            ( Reversible Nothing, False )
-  in
-    ( name, status, onClick name newIsReversed toMsg )
+    DecOrInc _ ->
+      if name == sortName then
+        ( name, Reversible (Just isReversed), onClick name (not isReversed) toMsg )
+      else
+        ( name, Reversible Nothing, onClick name False toMsg )
 
 
 onClick : String -> Bool -> (State -> msg) -> Attribute msg
