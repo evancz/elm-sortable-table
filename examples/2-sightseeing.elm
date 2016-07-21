@@ -99,9 +99,27 @@ viewSummary allSights =
           List.sum (List.map .price sights)
 
         summary =
-          "That is " ++ toString (Time.inHours time) ++ " hours of fun, costing $" ++ toString price
+          "That is " ++ timeToString time ++ " of fun, costing $" ++ toString price
       in
         p [] [ text summary ]
+
+
+timeToString : Time -> String
+timeToString time =
+  let
+    hours =
+      case floor (Time.inHours time) of
+        0 -> ""
+        1 -> "1 hour"
+        n -> toString n ++ " hours"
+
+    minutes =
+      case rem (round (Time.inMinutes time)) 60 of
+        0 -> ""
+        1 -> "1 minute"
+        n -> toString n ++ " minutes"
+  in
+    hours ++ " " ++ minutes
 
 
 
@@ -136,18 +154,9 @@ timeColumn : Table.Column Sight Msg
 timeColumn =
   Table.customColumn
     { name = "Time"
-    , viewData = viewTime
+    , viewData = timeToString << .time
     , sorter = Table.increasingOrDecreasingBy .time
     }
-
-
-viewTime : Sight -> String
-viewTime {time} =
-  if time < Time.hour then
-    toString (Time.inMinutes time) ++ "min"
-
-  else
-    toString (Time.inHours time) ++ "hr"
 
 
 checkboxColumn : Table.Column Sight Msg
@@ -181,9 +190,12 @@ type alias Sight =
 
 missionSights : List Sight
 missionSights =
-  [ Sight "Eat a Burrito" (Time.hour / 2) 7 4.6 False
-  , Sight "Buy drugs in Delores park" Time.hour 20 4.9 False
+  [ Sight "Eat a Burrito" (30 * Time.minute) 7 4.6 False
+  , Sight "Buy drugs in Dolores park" Time.hour 20 4.8 False
   , Sight "Armory Tour" (1.5 * Time.hour) 27 4.5 False
   , Sight "Tartine Bakery" Time.hour 10 4.1 False
   , Sight "Have Brunch" (2 * Time.hour) 25 4.2 False
+  , Sight "Get catcalled at BART" (5 * Time.minute) 0 1.6 False
+  , Sight "Buy a painting at \"Stuff\"" (45 * Time.minute) 400 4.7 False
+  , Sight "McDonalds at 24th" (20 * Time.minute) 5 2.8 False
   ]
