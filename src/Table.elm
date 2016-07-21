@@ -6,7 +6,7 @@ module Table exposing
   , Sorter, unsortable, increasingBy, decreasingBy
   , increasingOrDecreasingBy, decreasingOrIncreasingBy
   , Config, customConfig
-  , Customizations, HtmlDetails, Status(..)
+  , Customizations, HtmlDetails, Status(..), defaultCustomizations
   )
 
 {-|
@@ -49,7 +49,8 @@ is not that crazy.
 
 ## Custom Tables
 
-@docs Config, customConfig, Customizations, HtmlDetails, Status
+@docs Config, customConfig, Customizations, HtmlDetails, Status,
+  defaultCustomizations
 -}
 
 import Html exposing (Html, Attribute)
@@ -198,6 +199,8 @@ type alias HtmlDetails msg =
   }
 
 
+{-| The customizations used in `config` by default.
+-}
 defaultCustomizations : Customizations data msg
 defaultCustomizations =
   { tableAttrs = []
