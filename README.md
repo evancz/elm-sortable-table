@@ -26,7 +26,7 @@ Furthermore, you do not want to be creating table configurations dynamically, pa
 This library is one of the first &ldquo;reusable view&rdquo; packages that also manages some state, so I want to point out some design considerations that will be helpful in general.
 
 
-## The Elm Architecture / Single Source of Truth
+### The Elm Architecture / Single Source of Truth
 
 It may not be obvious at first glance, but this library follows The Elm Architecture:
 
@@ -49,7 +49,7 @@ To make this more clear, let&rsquo;s imagine the alternate choice: instead of gi
 Point is, **when creating an API like this, own as little state as possible.** Having multiple copies of &ldquo;the same&rdquo; value in your `Model` is a sure way to create synchronization errors. Elm is built on the idea that there should be a single source of truth, but if you design your API poorly, you can force your users to make duplicates and open themselves up to bugs for no reason. Do not do that to them!
 
 
-## Simple By Default
+### Simple By Default
 
 I designed this library to have a very smooth learning curve. As you read the docs, you start with the simplest functions. Predefined columns, and very little customization. This makes it easier for the reader to build a basic intuition for how things work.
 
