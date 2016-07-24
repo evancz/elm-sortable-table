@@ -26,7 +26,7 @@ Furthermore, you do not want to be creating table configurations dynamically, pa
 This library is one of the first &ldquo;reusable view&rdquo; packages that also manages some state, so I want to point out some design considerations that will be helpful in general.
 
 
-### The Elm Architecture / Single Source of Truth
+### The Elm Architecture
 
 It may not be obvious at first glance, but this library follows The Elm Architecture:
 
@@ -38,11 +38,12 @@ It may not be obvious at first glance, but this library follows The Elm Architec
 
   - `update` &mdash; This is a little hidden, but it is there. When you create a `Table.Config`, you provide a function `Table.State -> msg` so that whoever is rendering the table has a chance to update the table state.
 
-There are two important things here.
+I took some minor liberties with `update` to make the API a bit simpler. It would be more legit if `Table.Config` took a `Table.Msg -> msg` argument and you needed to use `Table.update : Table.Msg -> Table.State -> Table.State` to deal with it. I decided not to go this route because `Table.Msg` and `Table.State` would both allocate the same amount of memory and one version the overall API a bit tougher. As we learn from how people use this, we may see that the explicit `update` function is actually a better way to go though!
 
-First, I took some minor liberties with `update` to make the API a bit simpler. It would be more legit if `Table.Config` took a `Table.Msg -> msg` argument and you needed to use `Table.update : Table.Msg -> Table.State -> Table.State` to deal with it. I decided not to go this route because `Table.Msg` and `Table.State` would both allocate the same amount of memory and one version the overall API a bit tougher. As we learn from how people use this, we may see that the explicit `update` function is actually a better way to go though!
 
-Second, the actual data in the table is only given as an argument to `view`. To put that another way, the `Table.State` value only tracks the details specific to *displaying* a sorted table, not the actual data to appear in the table. **This is the most important decision in this whole library.** This choice means you can change your data without any risk of the table getting out of sync. You may be adding things, changing entries, or whatever else; the table will never &ldquo;get stuck&rdquo; and display out of date information.
+### Single Source of Truth
+
+The data displayed by in the table is given as an argument to `view`. To put that another way, the `Table.State` value only tracks the details specific to *displaying* a sorted table, not the actual data to appear in the table. **This is the most important decision in this whole library.** This choice means you can change your data without any risk of the table getting out of sync. You may be adding things, changing entries, or whatever else; the table will never &ldquo;get stuck&rdquo; and display out of date information.
 
 To make this more clear, let&rsquo;s imagine the alternate choice: instead of giving `List data` to `view`, we have it live in `Table.State`. Now say we want to update the dataset. We grab a copy of the data, make the changes we want, and put it back. But what if we forget to put it back? What if we hold on to that second copy in our `Model`? Which one is the *real* data now?
 
