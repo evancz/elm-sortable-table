@@ -1,7 +1,7 @@
 # Examples
 
-  1. [U.S. Presidents by Birth Place](https://evancz.github.io/elm-sortable-tables/presidents.html)
-  2. [Travel Planner for the Mission District in San Francisco](https://evancz.github.io/elm-sortable-tables/travel.html)
+  1. [U.S. Presidents by Birth Place](https://evancz.github.io/elm-sortable-table/presidents.html)
+  2. [Travel Planner for the Mission District in San Francisco](https://evancz.github.io/elm-sortable-table/travel.html)
 
 
 ## Build Instructions
