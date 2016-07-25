@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "Sortable tables for data of any shape.",
-    "repository": "https://github.com/evancz/elm-table.git",
+    "repository": "https://github.com/evancz/elm-sortable-table.git",
     "license": "BSD3",
     "source-directories": [
         "src"
