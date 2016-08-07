@@ -19,7 +19,7 @@ truth is pretty great!
 
 I recommend checking out the [examples][] to get a feel for how it works.
 
-[examples]: https://github.com/evancz/elm-tables/tree/master/examples
+[examples]: https://github.com/evancz/elm-sortable-table/tree/master/examples
 
 # View
 
@@ -133,7 +133,7 @@ You provide the following information in your table configuration:
 See the [examples][] to get a better feel for this!
 
 [keyed]: http://package.elm-lang.org/packages/elm-lang/html/latest/Html-Keyed
-[examples]: https://github.com/evancz/elm-tables/tree/master/examples
+[examples]: https://github.com/evancz/elm-sortable-table/tree/master/examples
 -}
 config
   : { toId : data -> String
