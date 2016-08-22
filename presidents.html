@@ -2447,22 +2447,124 @@ var _elm_lang$core$List$intersperse = F2(
 			return A2(_elm_lang$core$List_ops['::'], _p21._0, spersed);
 		}
 	});
-var _elm_lang$core$List$take = F2(
+var _elm_lang$core$List$takeReverse = F3(
+	function (n, list, taken) {
+		takeReverse:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) {
+				return taken;
+			} else {
+				var _p22 = list;
+				if (_p22.ctor === '[]') {
+					return taken;
+				} else {
+					var _v23 = n - 1,
+						_v24 = _p22._1,
+						_v25 = A2(_elm_lang$core$List_ops['::'], _p22._0, taken);
+					n = _v23;
+					list = _v24;
+					taken = _v25;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var _elm_lang$core$List$takeTailRec = F2(
 	function (n, list) {
+		return _elm_lang$core$List$reverse(
+			A3(
+				_elm_lang$core$List$takeReverse,
+				n,
+				list,
+				_elm_lang$core$Native_List.fromArray(
+					[])));
+	});
+var _elm_lang$core$List$takeFast = F3(
+	function (ctr, n, list) {
 		if (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) {
 			return _elm_lang$core$Native_List.fromArray(
 				[]);
 		} else {
-			var _p22 = list;
-			if (_p22.ctor === '[]') {
-				return list;
-			} else {
-				return A2(
-					_elm_lang$core$List_ops['::'],
-					_p22._0,
-					A2(_elm_lang$core$List$take, n - 1, _p22._1));
-			}
+			var _p23 = {ctor: '_Tuple2', _0: n, _1: list};
+			_v26_5:
+			do {
+				_v26_1:
+				do {
+					if (_p23.ctor === '_Tuple2') {
+						if (_p23._1.ctor === '[]') {
+							return list;
+						} else {
+							if (_p23._1._1.ctor === '::') {
+								switch (_p23._0) {
+									case 1:
+										break _v26_1;
+									case 2:
+										return _elm_lang$core$Native_List.fromArray(
+											[_p23._1._0, _p23._1._1._0]);
+									case 3:
+										if (_p23._1._1._1.ctor === '::') {
+											return _elm_lang$core$Native_List.fromArray(
+												[_p23._1._0, _p23._1._1._0, _p23._1._1._1._0]);
+										} else {
+											break _v26_5;
+										}
+									default:
+										if ((_p23._1._1._1.ctor === '::') && (_p23._1._1._1._1.ctor === '::')) {
+											var _p28 = _p23._1._1._1._0;
+											var _p27 = _p23._1._1._0;
+											var _p26 = _p23._1._0;
+											var _p25 = _p23._1._1._1._1._0;
+											var _p24 = _p23._1._1._1._1._1;
+											return (_elm_lang$core$Native_Utils.cmp(ctr, 1000) > 0) ? A2(
+												_elm_lang$core$List_ops['::'],
+												_p26,
+												A2(
+													_elm_lang$core$List_ops['::'],
+													_p27,
+													A2(
+														_elm_lang$core$List_ops['::'],
+														_p28,
+														A2(
+															_elm_lang$core$List_ops['::'],
+															_p25,
+															A2(_elm_lang$core$List$takeTailRec, n - 4, _p24))))) : A2(
+												_elm_lang$core$List_ops['::'],
+												_p26,
+												A2(
+													_elm_lang$core$List_ops['::'],
+													_p27,
+													A2(
+														_elm_lang$core$List_ops['::'],
+														_p28,
+														A2(
+															_elm_lang$core$List_ops['::'],
+															_p25,
+															A3(_elm_lang$core$List$takeFast, ctr + 1, n - 4, _p24)))));
+										} else {
+											break _v26_5;
+										}
+								}
+							} else {
+								if (_p23._0 === 1) {
+									break _v26_1;
+								} else {
+									break _v26_5;
+								}
+							}
+						}
+					} else {
+						break _v26_5;
+					}
+				} while(false);
+				return _elm_lang$core$Native_List.fromArray(
+					[_p23._1._0]);
+			} while(false);
+			return list;
 		}
+	});
+var _elm_lang$core$List$take = F2(
+	function (n, list) {
+		return A3(_elm_lang$core$List$takeFast, 0, n, list);
 	});
 var _elm_lang$core$List$repeatHelp = F3(
 	function (result, n, value) {
@@ -2471,12 +2573,12 @@ var _elm_lang$core$List$repeatHelp = F3(
 			if (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) {
 				return result;
 			} else {
-				var _v23 = A2(_elm_lang$core$List_ops['::'], value, result),
-					_v24 = n - 1,
-					_v25 = value;
-				result = _v23;
-				n = _v24;
-				value = _v25;
+				var _v27 = A2(_elm_lang$core$List_ops['::'], value, result),
+					_v28 = n - 1,
+					_v29 = value;
+				result = _v27;
+				n = _v28;
+				value = _v29;
 				continue repeatHelp;
 			}
 		}
@@ -2847,7 +2949,10 @@ function work()
 	var process;
 	while (numSteps < MAX_STEPS && (process = workQueue.shift()))
 	{
-		numSteps = step(numSteps, process);
+		if (process.root)
+		{
+			numSteps = step(numSteps, process);
+		}
 	}
 	if (!process)
 	{
@@ -2882,111 +2987,167 @@ var _elm_lang$core$Native_Platform = function() {
 
 // PROGRAMS
 
-function program(impl)
+function addPublicModule(object, name, main)
 {
-	return function(flagDecoder)
-	{
-		return function(object, moduleName)
-		{
-			object['worker'] = function worker(flags)
-			{
-				if (typeof flags !== 'undefined')
-				{
-					throw new Error(
-						'The `' + moduleName + '` module does not need flags.\n'
-						+ 'Call ' + moduleName + '.worker() with no arguments and you should be all set!'
-					);
-				}
+	var init = main ? makeEmbed(name, main) : mainIsUndefined(name);
 
-				return initialize(
-					impl.init,
-					impl.update,
-					impl.subscriptions,
-					function view(model) {},
-					renderer
-				);
-			};
-		};
+	object['worker'] = function worker(flags)
+	{
+		return init(undefined, flags, false);
+	}
+
+	object['embed'] = function embed(domNode, flags)
+	{
+		return init(domNode, flags, true);
+	}
+
+	object['fullscreen'] = function fullscreen(flags)
+	{
+		return init(document.body, flags, true);
 	};
 }
 
-function programWithFlags(impl)
+
+// PROGRAM FAIL
+
+function mainIsUndefined(name)
 {
-	return function(flagDecoder)
+	return function(domNode)
 	{
-		return function(object, moduleName)
-		{
-			object['worker'] = function worker(flags)
-			{
-				if (typeof flagDecoder === 'undefined')
-				{
-					throw new Error(
-						'Are you trying to sneak a Never value into Elm? Trickster!\n'
-						+ 'It looks like ' + moduleName + '.main is defined with `programWithFlags` but has type `Program Never`.\n'
-						+ 'Use `program` instead if you do not want flags.'
-					);
-				}
-
-				var result = A2(_elm_lang$core$Native_Json.run, flagDecoder, flags);
-				if (result.ctor === 'Err')
-				{
-					throw new Error(
-						moduleName + '.worker(...) was called with an unexpected argument.\n'
-						+ 'I tried to convert it to an Elm value, but ran into this problem:\n\n'
-						+ result._0
-					);
-				}
-
-				return initialize(
-					impl.init(result._0),
-					impl.update,
-					impl.subscriptions,
-					function view(model) {},
-					renderer
-				);
-			};
-		};
+		var message = 'Cannot initialize module `' + name +
+			'` because it has no `main` value!\nWhat should I show on screen?';
+		domNode.innerHTML = errorHtml(message);
+		throw new Error(message);
 	};
 }
 
-function renderer(enqueue, _)
+function errorHtml(message)
 {
-	return function(_) {};
+	return '<div style="padding-left:1em;">'
+		+ '<h2 style="font-weight:normal;"><b>Oops!</b> Something went wrong when starting your Elm program.</h2>'
+		+ '<pre style="padding-left:1em;">' + message + '</pre>'
+		+ '</div>';
 }
 
 
-// HTML TO PROGRAM
+// PROGRAM SUCCESS
 
-function htmlToProgram(vnode)
+function makeEmbed(moduleName, main)
 {
-	var emptyBag = batch(_elm_lang$core$Native_List.Nil);
-	var noChange = _elm_lang$core$Native_Utils.Tuple2(
-		_elm_lang$core$Native_Utils.Tuple0,
-		emptyBag
-	);
+	return function embed(rootDomNode, flags, withRenderer)
+	{
+		try
+		{
+			var program = mainToProgram(moduleName, main);
+			if (!withRenderer)
+			{
+				program.renderer = dummyRenderer;
+			}
+			return makeEmbedHelp(moduleName, program, rootDomNode, flags);
+		}
+		catch (e)
+		{
+			rootDomNode.innerHTML = errorHtml(e.message);
+			throw e;
+		}
+	};
+}
 
-	return _elm_lang$virtual_dom$VirtualDom$program({
-		init: noChange,
-		view: function(model) { return main; },
-		update: F2(function(msg, model) { return noChange; }),
-		subscriptions: function (model) { return emptyBag; }
+function dummyRenderer()
+{
+	return { update: function() {} };
+}
+
+
+// MAIN TO PROGRAM
+
+function mainToProgram(moduleName, wrappedMain)
+{
+	var main = wrappedMain.main;
+
+	if (typeof main.init === 'undefined')
+	{
+		var emptyBag = batch(_elm_lang$core$Native_List.Nil);
+		var noChange = _elm_lang$core$Native_Utils.Tuple2(
+			_elm_lang$core$Native_Utils.Tuple0,
+			emptyBag
+		);
+
+		return _elm_lang$virtual_dom$VirtualDom$programWithFlags({
+			init: function() { return noChange; },
+			view: function() { return main; },
+			update: F2(function() { return noChange; }),
+			subscriptions: function () { return emptyBag; }
+		});
+	}
+
+	var flags = wrappedMain.flags;
+	var init = flags
+		? initWithFlags(moduleName, main.init, flags)
+		: initWithoutFlags(moduleName, main.init);
+
+	return _elm_lang$virtual_dom$VirtualDom$programWithFlags({
+		init: init,
+		view: main.view,
+		update: main.update,
+		subscriptions: main.subscriptions,
 	});
 }
 
-
-// INITIALIZE A PROGRAM
-
-function initialize(init, update, subscriptions, view, renderer)
+function initWithoutFlags(moduleName, realInit)
 {
+	return function init(flags)
+	{
+		if (typeof flags !== 'undefined')
+		{
+			throw new Error(
+				'You are giving module `' + moduleName + '` an argument in JavaScript.\n'
+				+ 'This module does not take arguments though! You probably need to change the\n'
+				+ 'initialization code to something like `Elm.' + moduleName + '.fullscreen()`'
+			);
+		}
+		return realInit();
+	};
+}
+
+function initWithFlags(moduleName, realInit, flagDecoder)
+{
+	return function init(flags)
+	{
+		var result = A2(_elm_lang$core$Native_Json.run, flagDecoder, flags);
+		if (result.ctor === 'Err')
+		{
+			throw new Error(
+				'You are trying to initialize module `' + moduleName + '` with an unexpected argument.\n'
+				+ 'When trying to convert it to a usable Elm value, I run into this problem:\n\n'
+				+ result._0
+			);
+		}
+		return realInit(result._0);
+	};
+}
+
+
+// SETUP RUNTIME SYSTEM
+
+function makeEmbedHelp(moduleName, program, rootDomNode, flags)
+{
+	var init = program.init;
+	var update = program.update;
+	var subscriptions = program.subscriptions;
+	var view = program.view;
+	var makeRenderer = program.renderer;
+
 	// ambient state
 	var managers = {};
-	var updateView;
+	var renderer;
 
 	// init and update state in main process
 	var initApp = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
-		var model = init._0;
-		updateView = renderer(enqueue, view(model));
-		var cmds = init._1;
+		var results = init(flags);
+		var model = results._0;
+		renderer = makeRenderer(rootDomNode, enqueue, view(model));
+		var cmds = results._1;
 		var subs = subscriptions(model);
 		dispatchEffects(managers, cmds, subs);
 		callback(_elm_lang$core$Native_Scheduler.succeed(model));
@@ -2997,7 +3158,7 @@ function initialize(init, update, subscriptions, view, renderer)
 		return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
 			var results = A2(update, msg, model);
 			model = results._0;
-			updateView(view(model));
+			renderer.update(view(model));
 			var cmds = results._1;
 			var subs = subscriptions(model);
 			dispatchEffects(managers, cmds, subs);
@@ -3339,17 +3500,40 @@ var incomingPortMap = F2(function subMap(tagger, finalTagger)
 
 function setupIncomingPort(name, callback)
 {
+	var sentBeforeInit = [];
 	var subs = _elm_lang$core$Native_List.Nil;
 	var converter = effectManagers[name].converter;
+	var currentOnEffects = preInitOnEffects;
+	var currentSend = preInitSend;
 
 	// CREATE MANAGER
 
 	var init = _elm_lang$core$Native_Scheduler.succeed(null);
 
-	function onEffects(router, subList, state)
+	function preInitOnEffects(router, subList, state)
+	{
+		var postInitResult = postInitOnEffects(router, subList, state);
+
+		for(var i = 0; i < sentBeforeInit.length; i++)
+		{
+			postInitSend(sentBeforeInit[i]);
+		}
+
+		sentBeforeInit = null; // to release objects held in queue
+		currentSend = postInitSend;
+		currentOnEffects = postInitOnEffects;
+		return postInitResult;
+	}
+
+	function postInitOnEffects(router, subList, state)
 	{
 		subs = subList;
 		return init;
+	}
+
+	function onEffects(router, subList, state)
+	{
+		return currentOnEffects(router, subList, state);
 	}
 
 	effectManagers[name].init = init;
@@ -3357,9 +3541,14 @@ function setupIncomingPort(name, callback)
 
 	// PUBLIC API
 
-	function send(value)
+	function preInitSend(value)
 	{
-		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, value);
+		sentBeforeInit.push(value);
+	}
+
+	function postInitSend(incomingValue)
+	{
+		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
 		if (result.ctor === 'Err')
 		{
 			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
@@ -3374,6 +3563,11 @@ function setupIncomingPort(name, callback)
 		}
 	}
 
+	function send(incomingValue)
+	{
+		currentSend(incomingValue);
+	}
+
 	return { send: send };
 }
 
@@ -3383,14 +3577,11 @@ return {
 	sendToSelf: F2(sendToSelf),
 
 	// global setup
+	mainToProgram: mainToProgram,
 	effectManagers: effectManagers,
 	outgoingPort: outgoingPort,
 	incomingPort: incomingPort,
-
-	htmlToProgram: htmlToProgram,
-	program: program,
-	programWithFlags: programWithFlags,
-	initialize: initialize,
+	addPublicModule: addPublicModule,
 
 	// effect bags
 	leaf: leaf,
@@ -3398,7 +3589,15 @@ return {
 	map: F2(map)
 };
 
-}();var _elm_lang$core$Platform_Cmd$batch = _elm_lang$core$Native_Platform.batch;
+}();
+var _elm_lang$core$Platform$hack = _elm_lang$core$Native_Scheduler.succeed;
+var _elm_lang$core$Platform$sendToSelf = _elm_lang$core$Native_Platform.sendToSelf;
+var _elm_lang$core$Platform$sendToApp = _elm_lang$core$Native_Platform.sendToApp;
+var _elm_lang$core$Platform$Program = {ctor: 'Program'};
+var _elm_lang$core$Platform$Task = {ctor: 'Task'};
+var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
+var _elm_lang$core$Platform$Router = {ctor: 'Router'};
+var _elm_lang$core$Platform_Cmd$batch = _elm_lang$core$Native_Platform.batch;
 var _elm_lang$core$Platform_Cmd$none = _elm_lang$core$Platform_Cmd$batch(
 	_elm_lang$core$Native_List.fromArray(
 		[]));
@@ -3413,21 +3612,6 @@ _elm_lang$core$Platform_Cmd_ops['!'] = F2(
 	});
 var _elm_lang$core$Platform_Cmd$map = _elm_lang$core$Native_Platform.map;
 var _elm_lang$core$Platform_Cmd$Cmd = {ctor: 'Cmd'};
-var _elm_lang$core$Platform_Sub$batch = _elm_lang$core$Native_Platform.batch;
-var _elm_lang$core$Platform_Sub$none = _elm_lang$core$Platform_Sub$batch(
-	_elm_lang$core$Native_List.fromArray(
-		[]));
-var _elm_lang$core$Platform_Sub$map = _elm_lang$core$Native_Platform.map;
-var _elm_lang$core$Platform_Sub$Sub = {ctor: 'Sub'};
-var _elm_lang$core$Platform$hack = _elm_lang$core$Native_Scheduler.succeed;
-var _elm_lang$core$Platform$sendToSelf = _elm_lang$core$Native_Platform.sendToSelf;
-var _elm_lang$core$Platform$sendToApp = _elm_lang$core$Native_Platform.sendToApp;
-var _elm_lang$core$Platform$programWithFlags = _elm_lang$core$Native_Platform.programWithFlags;
-var _elm_lang$core$Platform$program = _elm_lang$core$Native_Platform.program;
-var _elm_lang$core$Platform$Program = {ctor: 'Program'};
-var _elm_lang$core$Platform$Task = {ctor: 'Task'};
-var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
-var _elm_lang$core$Platform$Router = {ctor: 'Router'};
 var _elm_lang$core$Result$toMaybe = function (result) {
 	var _p0 = result;
 	if (_p0.ctor === 'Ok') {
@@ -3790,13 +3974,21 @@ function endsWith(sub, str)
 function indexes(sub, str)
 {
 	var subLen = sub.length;
+	
+	if (subLen < 1)
+	{
+		return _elm_lang$core$Native_List.Nil;
+	}
+
 	var i = 0;
 	var is = [];
+
 	while ((i = str.indexOf(sub, i)) > -1)
 	{
 		is.push(i);
 		i = i + subLen;
-	}
+	}	
+	
 	return _elm_lang$core$Native_List.fromArray(is);
 }
 
@@ -3924,7 +4116,8 @@ return {
 	fromList: fromList
 };
 
-}();var _elm_lang$core$String$fromList = _elm_lang$core$Native_String.fromList;
+}();
+var _elm_lang$core$String$fromList = _elm_lang$core$Native_String.fromList;
 var _elm_lang$core$String$toList = _elm_lang$core$Native_String.toList;
 var _elm_lang$core$String$toFloat = _elm_lang$core$Native_String.toFloat;
 var _elm_lang$core$String$toInt = _elm_lang$core$Native_String.toInt;
@@ -4860,6 +5053,12 @@ var _elm_lang$core$Dict$diff = F2(
 			t1,
 			t2);
 	});
+var _elm_lang$core$Platform_Sub$batch = _elm_lang$core$Native_Platform.batch;
+var _elm_lang$core$Platform_Sub$none = _elm_lang$core$Platform_Sub$batch(
+	_elm_lang$core$Native_List.fromArray(
+		[]));
+var _elm_lang$core$Platform_Sub$map = _elm_lang$core$Native_Platform.map;
+var _elm_lang$core$Platform_Sub$Sub = {ctor: 'Sub'};
 var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
 var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 //import Maybe, Native.Array, Native.List, Native.Utils, Result //
@@ -5095,6 +5294,11 @@ function badOneOf(problems)
 	return { tag: 'oneOf', problems: problems };
 }
 
+function badCustom(msg)
+{
+	return { tag: 'custom', msg: msg };
+}
+
 function bad(msg)
 {
 	return { tag: 'fail', msg: msg };
@@ -5131,6 +5335,11 @@ function badToString(problem)
 				return 'I ran into the following problems'
 					+ (context === '_' ? '' : ' at ' + context)
 					+ ':\n\n' + problems.join('\n');
+
+			case 'custom':
+				return 'A `customDecoder` failed'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ' with the message: ' + problem.msg;
 
 			case 'fail':
 				return 'I ran into a `fail` decoder'
@@ -5334,7 +5543,7 @@ function runHelp(decoder, value)
 			var realResult = decoder.callback(result.value);
 			if (realResult.ctor === 'Err')
 			{
-				return badPrimitive('something custom', value);
+				return badCustom(realResult._0);
 			}
 			return ok(realResult._0);
 
@@ -5850,6 +6059,67 @@ function equalEvents(a, b)
 
 
 
+////////////  RENDERER  ////////////
+
+
+function renderer(parent, tagger, initialVirtualNode)
+{
+	var eventNode = { tagger: tagger, parent: undefined };
+
+	var domNode = render(initialVirtualNode, eventNode);
+	parent.appendChild(domNode);
+
+	var state = 'NO_REQUEST';
+	var currentVirtualNode = initialVirtualNode;
+	var nextVirtualNode = initialVirtualNode;
+
+	function registerVirtualNode(vNode)
+	{
+		if (state === 'NO_REQUEST')
+		{
+			rAF(updateIfNeeded);
+		}
+		state = 'PENDING_REQUEST';
+		nextVirtualNode = vNode;
+	}
+
+	function updateIfNeeded()
+	{
+		switch (state)
+		{
+			case 'NO_REQUEST':
+				throw new Error(
+					'Unexpected draw callback.\n' +
+					'Please report this to <https://github.com/elm-lang/core/issues>.'
+				);
+
+			case 'PENDING_REQUEST':
+				rAF(updateIfNeeded);
+				state = 'EXTRA_REQUEST';
+
+				var patches = diff(currentVirtualNode, nextVirtualNode);
+				domNode = applyPatches(domNode, currentVirtualNode, patches, eventNode);
+				currentVirtualNode = nextVirtualNode;
+
+				return;
+
+			case 'EXTRA_REQUEST':
+				state = 'NO_REQUEST';
+				return;
+		}
+	}
+
+	return { update: registerVirtualNode };
+}
+
+
+var rAF =
+	typeof requestAnimationFrame !== 'undefined'
+		? requestAnimationFrame
+		: function(cb) { setTimeout(cb, 1000 / 60); };
+
+
+
 ////////////  RENDER  ////////////
 
 
@@ -5877,7 +6147,11 @@ function render(vNode, eventNode)
 				subNode = subNode.node;
 			}
 
-			var subEventRoot = { tagger: tagger, parent: eventNode };
+			var subEventRoot = {
+				tagger: tagger,
+				parent: eventNode
+			};
+
 			var domNode = render(subNode, subEventRoot);
 			domNode.elm_event_node_ref = subEventRoot;
 			return domNode;
@@ -6825,14 +7099,7 @@ function applyPatch(domNode, patch)
 			return applyPatchesHelp(domNode, patch.data);
 
 		case 'p-tagger':
-			if (typeof domNode.elm_event_node_ref !== 'undefined')
-			{
-				domNode.elm_event_node_ref.tagger = patch.data;
-			}
-			else
-			{
-				domNode.elm_event_node_ref = { tagger: patch.data, parent: patch.eventNode };
-			}
+			domNode.elm_event_node_ref.tagger = patch.data;
 			return domNode;
 
 		case 'p-remove-last':
@@ -6901,33 +7168,8 @@ function applyPatchReorder(domNode, patch)
 {
 	var data = patch.data;
 
-	// end inserts
-	var endInserts = data.endInserts;
-	var end;
-	if (typeof endInserts !== 'undefined')
-	{
-		if (endInserts.length === 1)
-		{
-			var insert = endInserts[0];
-			var entry = insert.entry;
-			var end = entry.tag === 'move'
-				? entry.data
-				: render(entry.vnode, patch.eventNode);
-		}
-		else
-		{
-			end = document.createDocumentFragment();
-			for (var i = 0; i < endInserts.length; i++)
-			{
-				var insert = endInserts[i];
-				var entry = insert.entry;
-				var node = entry.tag === 'move'
-					? entry.data
-					: render(entry.vnode, patch.eventNode);
-				end.appendChild(node);
-			}
-		}
-	}
+	// remove end inserts
+	var frag = applyPatchReorderEndInsertsHelp(data.endInserts, patch);
 
 	// removals
 	domNode = applyPatchesHelp(domNode, data.patches);
@@ -6944,368 +7186,51 @@ function applyPatchReorder(domNode, patch)
 		domNode.insertBefore(node, domNode.childNodes[insert.index]);
 	}
 
-	if (typeof end !== 'undefined')
+	// add end inserts
+	if (typeof frag !== 'undefined')
 	{
-		domNode.appendChild(end);
+		domNode.appendChild(frag);
 	}
 
 	return domNode;
 }
 
 
-
-////////////  FREEZE  ////////////
-
-
-var DATA_KEY = 'data-vrep';
-
-function freezeNode(vNode)
+function applyPatchReorderEndInsertsHelp(endInserts, patch)
 {
-	switch (vNode.type)
+	if (typeof endInserts === 'undefined')
 	{
-		case 'thunk':
-			var node = vNode.thunk();
-			vNode.func = null;
-			vNode.args = args.map(function() { return 0; });
-			vNode.thunk = null;
-			vNode.node = node;
-			return freezeNode(node);
-
-		case 'tagger':
-			vNode.tagger = null;
-			return freezeNode(vNode.node);
-
-		case 'text':
-			return vNode.text
-				.replace(/&/g, "&amp;")
-				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;")
-				.replace(/"/g, "&quot;")
-				.replace(/'/g, "&#039;");
-
-		case 'node':
-			return '<' + vNode.tag + freezeFacts(vNode.facts) + '>'
-				+ vNode.children.map(freezeNode).join('')
-				+ '</' + vNode.tag + '>';
-
-		case 'keyed-node':
-			return '<' + vNode.tag + freezeFacts(vNode.facts) + '>'
-				+ vNode.children.map(function(kid) { return freezeNode(kid._1); }).join('')
-				+ '</' + vNode.tag + '>';
-
-		case 'custom':
-			vNode.facts = null;
-			vNode.model = null;
-			vNode.impl = null;
-			return '<div></div>';
-	}
-}
-
-
-function freezeFacts(facts)
-{
-	var string = '';
-
-	for (var key in facts)
-	{
-		var fact = facts[key];
-
-		switch (key)
-		{
-			case STYLE_KEY:
-				var styles = facts[key];
-				string += ' style="';
-				for (var prop in styles)
-				{
-					string += prop + ':' + styles[prop] + ';'
-				}
-				string += '"';
-				break;
-
-			case EVENT_KEY:
-				facts[key] = undefined;
-				break;
-
-			case ATTR_KEY:
-				string += freezeAttribute(fact.realKey, fact.value);
-				break;
-
-			case ATTR_NS_KEY:
-				var data = fact.value;
-				string += freezeAttribute(fact.realKey, data.value);
-				break;
-
-			default:
-				string += freezeAttribute(propertyToAttribute[key] || key, fact);
-				break;
-		}
+		return;
 	}
 
-	return string;
+	var frag = document.createDocumentFragment();
+	for (var i = 0; i < endInserts.length; i++)
+	{
+		var insert = endInserts[i];
+		var entry = insert.entry;
+		frag.appendChild(entry.tag === 'move'
+			? entry.data
+			: render(entry.vnode, patch.eventNode)
+		);
+	}
+	return frag;
 }
-
-
-function freezeAttribute(key, value)
-{
-	return ' ' + key + '="' + value + '"';
-}
-
-
-var propertyToAttribute = {
-	'className': 'class',
-    'htmlFor': 'for',
-    'httpEquiv': 'http-equiv',
-    'acceptCharset': 'accept-charset'
-};
 
 
 
 ////////////  PROGRAMS  ////////////
 
 
-function program(impl)
+function programWithFlags(details)
 {
-	return function(flagDecoder)
-	{
-		return function(object, moduleName)
-		{
-			setEverythingUp(impl, object, moduleName, function(flags, domNode)
-			{
-				if (typeof flags === 'undefined')
-				{
-					return impl.init;
-				}
-
-				var errorMessage =
-					'The `' + moduleName + '` module does not need flags.\n'
-					+ 'Initialize it with no arguments and you should be all set!';
-
-				crash(errorMessage, domNode);
-			});
-		};
+	return {
+		init: details.init,
+		update: details.update,
+		subscriptions: details.subscriptions,
+		view: details.view,
+		renderer: renderer
 	};
 }
-
-function programWithFlags(impl)
-{
-	return function(flagDecoder)
-	{
-		return function(object, moduleName)
-		{
-			setEverythingUp(impl, object, moduleName, function(flags, domNode)
-			{
-				if (typeof flagDecoder === 'undefined')
-				{
-					var errorMessage =
-						'Are you trying to sneak a Never value into Elm? Trickster!\n'
-						+ 'It looks like ' + moduleName + '.main is defined with `programWithFlags` but has type `Program Never`.\n'
-						+ 'Use `program` instead if you do not want flags.'
-
-					crash(errorMessage, domNode);
-				}
-
-				var result = A2(_elm_lang$core$Native_Json.run, flagDecoder, flags);
-				if (result.ctor === 'Ok')
-				{
-					return impl.init(result._0);
-				}
-
-				var errorMessage =
-					'Trying to initialize the `' + moduleName + '` module with an unexpected flag.\n'
-					+ 'I tried to convert it to an Elm value, but ran into this problem:\n\n'
-					+ result._0;
-
-				crash(errorMessage, domNode);
-			});
-		};
-	};
-}
-
-function setEverythingUp(impl, object, moduleName, flagChecker)
-{
-	object['embed'] = function embed(node, flags)
-	{
-		var init = flagChecker(flags, node);
-
-		while (node.lastChild)
-		{
-			node.removeChild(node.lastChild);
-		}
-
-		return _elm_lang$core$Native_Platform.initialize(
-			init,
-			impl.update,
-			impl.subscriptions,
-			impl.view,
-			rendererNormal(node)
-		);
-	};
-
-	object['fullscreen'] = function fullscreen(flags)
-	{
-		var init = flagChecker(flags, document.body);
-
-		return _elm_lang$core$Native_Platform.initialize(
-			init,
-			impl.update,
-			impl.subscriptions,
-			impl.view,
-			rendererNormal(document.body)
-		);
-	};
-
-	object['freeze'] = function freeze(id, flags)
-	{
-		var model = flagChecker(flags)._0;
-		var vNode = impl.view(model);
-		var html = freezeNode(vNode);
-		return '<div id="' + id + '" '
-			+ DATA_KEY + "='" + JSON.stringify(vNode)
-			+ "'>" + html + '</div>';
-	};
-
-	object['thaw'] = function thaw(id, flags)
-	{
-		return _elm_lang$core$Native_Platform.initialize(
-			flagChecker(flags),
-			impl.update,
-			impl.subscriptions,
-			impl.view,
-			rendererThaw(moduleName, id)
-		);
-	};
-}
-
-function crash(errorMessage, domNode)
-{
-	if (domNode)
-	{
-		domNode.innerHTML =
-			'<div style="padding-left:1em;">'
-			+ '<h2 style="font-weight:normal;"><b>Oops!</b> Something went wrong when starting your Elm program.</h2>'
-			+ '<pre style="padding-left:1em;">' + errorMessage + '</pre>'
-			+ '</div>';
-	}
-
-	throw new Error(errorMessage);
-}
-
-
-////////////  RENDERER  ////////////
-
-
-function rendererNormal(parentNode)
-{
-	return function(tagger, initialVirtualNode)
-	{
-		var eventNode = { tagger: tagger, parent: undefined };
-		var domNode = render(initialVirtualNode, eventNode);
-		parentNode.appendChild(domNode);
-		return makeStepper(domNode, initialVirtualNode, eventNode);
-	};
-}
-
-function rendererThaw(moduleName, id)
-{
-	return function(tagger, initialVirtualNode)
-	{
-		// get id
-		if (typeof id !== 'string')
-		{
-			crash(
-				'To initialize a program with ' + moduleName
-				+ '.thaw(), the first argument must be the STRING id you used when you called '
-				+ moduleName + '.freeze() and the HTML that resulted from freeze must be embeded on this page.'
-			);
-		}
-
-		// get DOM node
-		var domNode = document.getElementById(id);
-		if (!domNode)
-		{
-			crash(
-				'You tried to initialize a frozen program with '
-				+ moduleName + '.thaw("' + id + '"), but I cannot find that ID in the DOM.\n'
-				+ 'Are you sure it is the same ID you used when calling ' + moduleName + '.freeze()?\n'
-				+ 'Are you sure you embedded the frozen HTML in this page?'
-			);
-		}
-
-		// get frozen node
-		try
-		{
-			var frozenVirtualNode = JSON.parse(domNode.getAttribute(DATA_KEY));
-			domNode.removeAttribute(DATA_KEY);
-		}
-		catch (e)
-		{
-			var errorMessage =
-				'You tried to initialize a frozen program with '
-				+ moduleName + '.thaw("' + id + '"), but some data has been corrupted.\n'
-				+ 'Calling freeze produces an HTML string containing a ' + DATA_KEY
-				+ ' attribute. That attribute SHOULD hold a JSON object that'
-				+ ' I use to get everything set up, but I ran into the\n'
-				+ ' following problem when trying to read it:\n\n'
-				+ e.message;
-
-			crash(errorMessage, domNode);
-		}
-
-		var eventNode = { tagger: tagger, parent: undefined };
-		var stepper = makeStepper(domNode.firstChild, frozenVirtualNode, eventNode);
-		stepper(initialVirtualNode);
-		return stepper;
-	}
-}
-
-function makeStepper(domNode, initialVirtualNode, eventNode)
-{
-	var state = 'NO_REQUEST';
-	var currNode = initialVirtualNode;
-	var nextNode = initialVirtualNode;
-
-	function updateIfNeeded()
-	{
-		switch (state)
-		{
-			case 'NO_REQUEST':
-				throw new Error(
-					'Unexpected draw callback.\n' +
-					'Please report this to <https://github.com/elm-lang/virtual-dom/issues>.'
-				);
-
-			case 'PENDING_REQUEST':
-				rAF(updateIfNeeded);
-				state = 'EXTRA_REQUEST';
-
-				var patches = diff(currNode, nextNode);
-				domNode = applyPatches(domNode, currNode, patches, eventNode);
-				currNode = nextNode;
-
-				return;
-
-			case 'EXTRA_REQUEST':
-				state = 'NO_REQUEST';
-				return;
-		}
-	}
-
-	return function stepper(virtualNode)
-	{
-		if (state === 'NO_REQUEST')
-		{
-			rAF(updateIfNeeded);
-		}
-		state = 'PENDING_REQUEST';
-		nextNode = virtualNode;
-	};
-}
-
-
-var rAF =
-	typeof requestAnimationFrame !== 'undefined'
-		? requestAnimationFrame
-		: function(callback) { callback(); };
 
 
 return {
@@ -7327,12 +7252,10 @@ return {
 	lazy3: F4(lazy3),
 	keyedNode: F3(keyedNode),
 
-	program: program,
 	programWithFlags: programWithFlags
 };
 
 }();var _elm_lang$virtual_dom$VirtualDom$programWithFlags = _elm_lang$virtual_dom$Native_VirtualDom.programWithFlags;
-var _elm_lang$virtual_dom$VirtualDom$program = _elm_lang$virtual_dom$Native_VirtualDom.program;
 var _elm_lang$virtual_dom$VirtualDom$keyedNode = _elm_lang$virtual_dom$Native_VirtualDom.keyedNode;
 var _elm_lang$virtual_dom$VirtualDom$lazy3 = _elm_lang$virtual_dom$Native_VirtualDom.lazy3;
 var _elm_lang$virtual_dom$VirtualDom$lazy2 = _elm_lang$virtual_dom$Native_VirtualDom.lazy2;
@@ -7458,26 +7381,37 @@ var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
 var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
 var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
 var _elm_lang$html$Html_App$programWithFlags = _elm_lang$virtual_dom$VirtualDom$programWithFlags;
-var _elm_lang$html$Html_App$program = _elm_lang$virtual_dom$VirtualDom$program;
-var _elm_lang$html$Html_App$beginnerProgram = function (_p0) {
-	var _p1 = _p0;
-	return _elm_lang$html$Html_App$program(
+var _elm_lang$html$Html_App$program = function (app) {
+	return _elm_lang$html$Html_App$programWithFlags(
+		_elm_lang$core$Native_Utils.update(
+			app,
+			{
+				init: function (_p0) {
+					return app.init;
+				}
+			}));
+};
+var _elm_lang$html$Html_App$beginnerProgram = function (_p1) {
+	var _p2 = _p1;
+	return _elm_lang$html$Html_App$programWithFlags(
 		{
-			init: A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				_p1.model,
-				_elm_lang$core$Native_List.fromArray(
-					[])),
+			init: function (_p3) {
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_p2.model,
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			},
 			update: F2(
 				function (msg, model) {
 					return A2(
 						_elm_lang$core$Platform_Cmd_ops['!'],
-						A2(_p1.update, msg, model),
+						A2(_p2.update, msg, model),
 						_elm_lang$core$Native_List.fromArray(
 							[]));
 				}),
-			view: _p1.view,
-			subscriptions: function (_p2) {
+			view: _p2.view,
+			subscriptions: function (_p4) {
 				return _elm_lang$core$Platform_Sub$none;
 			}
 		});
@@ -7498,9 +7432,6 @@ var _elm_lang$html$Html_Attributes$maxlength = function (n) {
 		_elm_lang$html$Html_Attributes$attribute,
 		'maxlength',
 		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$form = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$attribute, 'form', value);
 };
 var _elm_lang$html$Html_Attributes$datetime = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
@@ -7668,6 +7599,9 @@ var _elm_lang$html$Html_Attributes$size = function (n) {
 };
 var _elm_lang$html$Html_Attributes$for = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'htmlFor', value);
+};
+var _elm_lang$html$Html_Attributes$form = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'form', value);
 };
 var _elm_lang$html$Html_Attributes$max = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'max', value);
@@ -8565,18 +8499,20 @@ var _evancz$elm_table$Main$view = function (_p1) {
 				A3(_evancz$elm_table$Table$view, _evancz$elm_table$Main$config, _p2.tableState, acceptablePeople)
 			]));
 };
-var _evancz$elm_table$Main$main = _elm_lang$html$Html_App$program(
-	{
-		init: _evancz$elm_table$Main$init(_evancz$elm_table$Main$presidents),
-		update: _evancz$elm_table$Main$update,
-		view: _evancz$elm_table$Main$view,
-		subscriptions: function (_p4) {
-			return _elm_lang$core$Platform_Sub$none;
-		}
-	})();
+var _evancz$elm_table$Main$main = {
+	main: _elm_lang$html$Html_App$program(
+		{
+			init: _evancz$elm_table$Main$init(_evancz$elm_table$Main$presidents),
+			update: _evancz$elm_table$Main$update,
+			view: _evancz$elm_table$Main$view,
+			subscriptions: function (_p4) {
+				return _elm_lang$core$Platform_Sub$none;
+			}
+		})
+};
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
-_evancz$elm_table$Main$main(Elm['Main'], 'Main');
+_elm_lang$core$Native_Platform.addPublicModule(Elm['Main'], 'Main', typeof _evancz$elm_table$Main$main === 'undefined' ? null : _evancz$elm_table$Main$main);
 
 if (typeof define === "function" && define['amd'])
 {
