@@ -476,7 +476,7 @@ toHeaderInfo (State sortName isReversed) toMsg { name, sorter } =
 onClick : String -> Bool -> (State -> msg) -> Attribute msg
 onClick name isReversed toMsg =
   E.on "click" <| Json.map toMsg <|
-    Json.object2 State (Json.succeed name) (Json.succeed isReversed)
+    Json.map2 State (Json.succeed name) (Json.succeed isReversed)
 
 
 viewRow : (data -> String) -> List (ColumnData data msg) -> (data -> List (Attribute msg)) -> data -> ( String, Html msg )
