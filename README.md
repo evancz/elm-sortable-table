@@ -43,7 +43,7 @@ I took some minor liberties with `update` to make the API a bit simpler. It woul
 
 ### Single Source of Truth
 
-The data displayed by in the table is given as an argument to `view`. To put that another way, the `Table.State` value only tracks the details specific to *displaying* a sorted table, not the actual data to appear in the table. **This is the most important decision in this whole library.** This choice means you can change your data without any risk of the table getting out of sync. You may be adding things, changing entries, or whatever else; the table will never &ldquo;get stuck&rdquo; and display out of date information.
+The data displayed in the table is given as an argument to `view`. To put that another way, the `Table.State` value only tracks the details specific to *displaying* a sorted table, not the actual data to appear in the table. **This is the most important decision in this whole library.** This choice means you can change your data without any risk of the table getting out of sync. You may be adding things, changing entries, or whatever else; the table will never &ldquo;get stuck&rdquo; and display out of date information.
 
 To make this more clear, let&rsquo;s imagine the alternate choice: instead of giving `List data` to `view`, we have it live in `Table.State`. Now say we want to update the dataset. We grab a copy of the data, make the changes we want, and put it back. But what if we forget to put it back? What if we hold on to that second copy in our `Model`? Which one is the *real* data now?
 
