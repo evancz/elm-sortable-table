@@ -153,4 +153,5 @@ presidents =
   , Person "George W. Bush" 1946 "New Haven" "Connecticut"
   , Person "Bill Clinton" 1946 "Hope" "Arkansas"
   , Person "Barack Obama" 1961 "Honolulu" "Hawaii"
+  , Person "Donald Trump" 1946 "New York City" "New York"
   ]
