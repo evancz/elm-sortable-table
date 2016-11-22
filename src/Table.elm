@@ -128,7 +128,7 @@ You provide the following information in your table configuration:
   - `toId` &mdash; turn a `Person` into a unique ID. This lets us use
   [`Html.Keyed`][keyed] under the hood to make resorts faster.
   - `columns` &mdash; specify some columns to show.
-  - `toMsg` &mdash; a way send new table states to your app as messages.
+  - `toMsg` &mdash; a way to send new table states to your app as messages.
 
 See the [examples][] to get a better feel for this!
 
