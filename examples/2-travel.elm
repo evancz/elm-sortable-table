@@ -1,16 +1,14 @@
 import Html exposing (Html, Attribute, div, h1, input, p, text)
-import Html.App as App
-import Html.Attributes exposing (checked, style, type')
+import Html.Attributes exposing (checked, style, type_)
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (lazy)
-import String
 import Table exposing (defaultCustomizations)
 import Time exposing (Time)
 
 
 
 main =
-  App.program
+  Html.program
     { init = init missionSights
     , update = update
     , view = view
@@ -171,7 +169,7 @@ checkboxColumn =
 viewCheckbox : Sight -> Table.HtmlDetails Msg
 viewCheckbox {selected} =
   Table.HtmlDetails []
-    [ input [ type' "checkbox", checked selected ] []
+    [ input [ type_ "checkbox", checked selected ] []
     ]
 
 
