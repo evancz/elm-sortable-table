@@ -1,14 +1,12 @@
 import Html exposing (Html, div, h1, input, text)
-import Html.App as App
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onInput)
-import String
 import Table
 
 
 
 main =
-  App.program
+  Html.program
     { init = init presidents
     , update = update
     , view = view
