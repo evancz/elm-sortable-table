@@ -7,6 +7,7 @@ module Table exposing
   , increasingOrDecreasingBy, decreasingOrIncreasingBy
   , Config, customConfig
   , Customizations, HtmlDetails, Status(..), defaultCustomizations
+  , encode, decode
   )
 
 {-|
@@ -59,7 +60,7 @@ import Html.Events as E
 import Html.Keyed as Keyed
 import Html.Lazy exposing (lazy2, lazy3)
 import Json.Decode as Json
-
+import Json.Encode as Encode
 
 
 -- STATE
@@ -619,3 +620,20 @@ sort by best time by default, but also see the other order.
 increasingOrDecreasingBy : (data -> comparable) -> Sorter data
 increasingOrDecreasingBy toComparable =
   IncOrDec (List.sortBy toComparable)
+
+
+-- SERIALIZATION
+
+encode : State -> Encode.Value
+encode (State colname isReversed) =
+  Encode.list
+    [ Encode.string colname
+    , Encode.bool isReversed
+    ]
+
+decode : Json.Decoder State
+decode =
+  Json.map2 State
+    (Json.index 0 Json.string)
+    (Json.index 1 Json.bool)
+
