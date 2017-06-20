@@ -632,10 +632,14 @@ increasingOrDecreasingBy toComparable =
   IncOrDec (List.sortBy toComparable)
 
 
-{-| Sometimes you want more customizable sort for an increasing *or* decreasing
-order.
+{-| Sometimes you want more customizable sorters (ascending and descending)
+for an increasing *or* decreasing order.
 
 -}
-increasingOrDecreasingBySorters : (data -> data -> Order) -> (data -> data -> Order) -> Sorter data
-increasingOrDecreasingBySorters ascendingCompare descendingCompare =
-    IncOrDecSorters (List.sortWith ascendingCompare) (List.sortWith descendingCompare)
+increasingOrDecreasingBySorters :
+    { ascendingSorter : List data -> List data
+    , descendingSorter : List data -> List data
+    }
+    -> Sorter data
+increasingOrDecreasingBySorters sorters =
+    IncOrDecSorters sorters.ascendingSorter sorters.descendingSorter
