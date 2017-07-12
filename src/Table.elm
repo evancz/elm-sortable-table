@@ -263,12 +263,12 @@ simpleTheadHelp ( name, status, click ) =
 
 darkGrey : String -> Html msg
 darkGrey symbol =
-    Html.span [ Attr.style "color" "#555" ] [ Html.text (" " ++ symbol) ]
+    Html.span [ Attr.style "color" "#555" ] [ Html.text ("\u{00A0}" ++ symbol) ]
 
 
 lightGrey : String -> Html msg
 lightGrey symbol =
-    Html.span [ Attr.style "color" "#ccc" ] [ Html.text (" " ++ symbol) ]
+    Html.span [ Attr.style "color" "#ccc" ] [ Html.text ("\u{00A0}" ++ symbol) ]
 
 
 simpleRowAttrs : data -> List (Attribute msg)
