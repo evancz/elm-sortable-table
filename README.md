@@ -58,6 +58,6 @@ The trick is that all these simple functions are defined in terms of crazier one
 
 To turn this into advice about API design, **helper functions can make a library simpler to learn and use.** Ultimately, people may not use `Table.floatColumn` very often in real stuff, but that function is crucial for learning. So when you find yourself with a tough API, one way to ramp people up is to create specialized helper functions that let you get common functionality without confronting people with all the details.
 
-### Elm 0.18 Upgrade
+### Elm 0.19 Upgrade
 
-Upgraded to Elm 0.18 from [evancz/elm-sortable-table](https://package.elm-lang.org/packages/evancz/elm-sortable-table/latest), at Evan's request for someone to take it over.
+Upgraded to Elm 0.19 from [evancz/elm-sortable-table](https://package.elm-lang.org/packages/evancz/elm-sortable-table/latest), at Evan's request for someone to take it over.
