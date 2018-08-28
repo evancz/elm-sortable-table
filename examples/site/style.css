@@ -1,0 +1,21 @@
+table {
+  margin: 0.2em 0.5em 0.5em 0.0em;
+  border-collapse: collapse;
+}
+
+table tr:nth-child(even) {
+  background: white;
+}
+
+table tr:nth-child(odd) {
+  background: whitesmoke;
+}
+
+table th, table td {
+  border: 1px silver solid;
+  padding: 0.2em;
+}
+table thead th {
+  background: gainsboro;
+  text-align: center;
+}
