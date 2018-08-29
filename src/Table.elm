@@ -25,7 +25,7 @@ I recommend checking out the [examples][] to get a feel for how it works.
 
 @docs view
 
-# Configuration
+# Basic Configuration
 
 @docs config, stringColumn, intColumn, floatColumn
 
@@ -34,12 +34,11 @@ I recommend checking out the [examples][] to get a feel for how it works.
 @docs State, initialSort
 
 
-# Crazy Customization
+# Extended Customization
 
-If you are new to this library, you can probably stop reading here. After this
+So far we have presented the most common customization options. After this
 point are a bunch of ways to customize your table further. If it does not
-provide what you need, you may just want to write a custom table yourself. It
-is not that crazy.
+provide what you need, you may just want to write a custom table yourself.
 
 ## Custom Columns
 
