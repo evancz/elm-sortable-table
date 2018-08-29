@@ -1,0 +1,4 @@
+#!/bin/bash
+
+elm make 1-presidents.elm --output site/presidents.js
+elm make 2-travel.elm --output site/travel.js
