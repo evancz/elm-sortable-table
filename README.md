@@ -1,4 +1,6 @@
-**NOTE: This package is not published in 0.19 and above.** In an effort to prune my responsibilities, we suggested that community members fork it and take it in the direction that makes sense to them. Maybe that means adding more features. Maybe it means removing things to make it even simpler. Maybe it means rewriting it from scratch. Point is, **please search for packages with the same or similar name, and look for an author you trust.**
+# DEPRECATED
+
+**This package is not published in 0.19 and above.** In an effort to prune my responsibilities, we suggested that community members fork it and take it in the direction that makes sense to them. Maybe that means adding more features. Maybe it means removing things to make it even simpler. Maybe it means rewriting it from scratch. Point is, **please search for packages with the same or similar name, and look for an author you trust.**
 
 <br>
 
