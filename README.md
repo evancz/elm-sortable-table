@@ -19,8 +19,8 @@ This library also lets you customize `<caption>`, `<tbody>`, `<tr>`, etc. for yo
 
 ## Examples
 
-  1. [U.S. Presidents by Birth Place](https://evancz.github.io/elm-sortable-table/presidents.html) / [Code](https://github.com/evancz/elm-sortable-table/blob/master/examples/1-presidents.elm)
-  2. [Travel Planner for the Mission District in San Francisco](https://evancz.github.io/elm-sortable-table/travel.html) / [Code](https://github.com/evancz/elm-sortable-table/blob/master/examples/2-travel.elm)
+  1. [U.S. Presidents by Birth Place](https://billstclair.github.io/elm-sortable-table/presidents.html) / [Code](https://github.com/billstclair/elm-sortable-table/blob/master/examples/1-presidents.elm)
+  2. [Travel Planner for the Mission District in San Francisco](https://billstclair.github.io/elm-sortable-table/travel.html) / [Code](https://github.com/billstclair/elm-sortable-table/blob/master/examples/2-travel.elm)
 
 
 ## Usage Rules
@@ -69,3 +69,7 @@ I designed this library to have a very smooth learning curve. As you read the do
 The trick is that all these simple functions are defined in terms of crazier ones that allow for more customization. As the user **NEEDS** that complexity, they can read on and gradually use the parts that are relevant to them. This means the user never finds themselves in a situation where they have to learn a bunch of stuff that does not actually matter to them. At the same time, that stuff is there when they need it.
 
 To turn this into advice about API design, **helper functions can make a library simpler to learn and use.** Ultimately, people may not use `Table.floatColumn` very often in real stuff, but that function is crucial for learning. So when you find yourself with a tough API, one way to ramp people up is to create specialized helper functions that let you get common functionality without confronting people with all the details.
+
+### Elm 0.19 Upgrade
+
+Upgraded to Elm 0.19 from [evancz/elm-sortable-table](https://package.elm-lang.org/packages/evancz/elm-sortable-table/latest), at Evan's request for someone to take it over.
