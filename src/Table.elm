@@ -4,7 +4,7 @@ module Table exposing
   , State, initialSort
   , Column, customColumn, veryCustomColumn
   , Sorter, unsortable, increasingBy, decreasingBy
-  , increasingOrDecreasingBy, decreasingOrIncreasingBy
+  , increasingOrDecreasingBy, decreasingOrIncreasingBy, increasingOrDecreasingBySorters
   , Config, customConfig
   , Customizations, HtmlDetails, Status(..), defaultCustomizations
   )
@@ -45,7 +45,7 @@ is not that crazy.
 
 @docs Column, customColumn, veryCustomColumn,
   Sorter, unsortable, increasingBy, decreasingBy,
-  increasingOrDecreasingBy, decreasingOrIncreasingBy
+  increasingOrDecreasingBy, decreasingOrIncreasingBy, increasingOrDecreasingBySorters
 
 ## Custom Tables
 
@@ -472,6 +472,13 @@ toHeaderInfo (State sortName isReversed) toMsg { name, sorter } =
       else
         ( name, Reversible Nothing, onClick name False toMsg )
 
+    IncOrDecSorters _ _ ->
+      if name == sortName then
+        ( name, Reversible (Just isReversed), onClick name (not isReversed) toMsg )
+      else
+        ( name, Reversible Nothing, onClick name False toMsg )
+
+
 
 onClick : String -> Bool -> (State -> msg) -> Attribute msg
 onClick name isReversed toMsg =
@@ -532,6 +539,9 @@ applySorter isReversed sorter data =
     DecOrInc sort ->
       if isReversed then sort data else List.reverse (sort data)
 
+    IncOrDecSorters ascending descending ->
+      if isReversed then ascending data else descending data
+
 
 findSorter : String -> List (ColumnData data msg) -> Maybe (Sorter data)
 findSorter selectedColumn columnData =
@@ -558,6 +568,7 @@ type Sorter data
   | Decreasing (List data -> List data)
   | IncOrDec (List data -> List data)
   | DecOrInc (List data -> List data)
+  | IncOrDecSorters (List data -> List data) (List data -> List data)
 
 
 {-| A sorter for columns that are unsortable. Maybe you have a column in your
@@ -619,3 +630,16 @@ sort by best time by default, but also see the other order.
 increasingOrDecreasingBy : (data -> comparable) -> Sorter data
 increasingOrDecreasingBy toComparable =
   IncOrDec (List.sortBy toComparable)
+
+
+{-| Sometimes you want more customizable sorters (ascending and descending)
+for an increasing *or* decreasing order.
+
+-}
+increasingOrDecreasingBySorters :
+    { ascendingSorter : List data -> List data
+    , descendingSorter : List data -> List data
+    }
+    -> Sorter data
+increasingOrDecreasingBySorters sorters =
+    IncOrDecSorters sorters.ascendingSorter sorters.descendingSorter
