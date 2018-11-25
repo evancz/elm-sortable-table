@@ -1,6 +1,10 @@
-import Html exposing (Html, div, h1, input, text)
-import Html.Attributes exposing (placeholder)
-import Html.Events exposing (onInput)
+port module Main exposing (main)
+
+import Json.Decode as JD
+import Json.Encode as JE
+import Html exposing (Html, div, h1, input, text, button)
+import Html.Attributes exposing (placeholder, value, style)
+import Html.Events exposing (onInput, onClick)
 import Table
 
 
@@ -10,7 +14,7 @@ main =
     { init = init presidents
     , update = update
     , view = view
-    , subscriptions = \_ -> Sub.none
+    , subscriptions = subscriptions
     }
 
 
@@ -24,18 +28,37 @@ type alias Model =
   , query : String
   }
 
+type alias Stored =
+  { tableState : Table.State
+  , query : String
+  }
 
 init : List Person -> ( Model, Cmd Msg )
 init people =
-  let
-    model =
-      { people = people
-      , tableState = Table.initialSort "Year"
-      , query = ""
-      }
-  in
-    ( model, Cmd.none )
+  ( initModel people
+  , getStorage () 
+  )
 
+initModel : List Person -> Model
+initModel people =
+  { people = people
+  , tableState = Table.initialSort "Year"
+  , query = ""
+  }
+
+
+toStore : Model -> Stored
+toStore { tableState, query } =
+  { tableState = tableState
+  , query = query
+  }
+
+fromStore : Stored -> Model
+fromStore { tableState, query } =
+  { people = []
+  , tableState = tableState
+  , query = query
+  }
 
 
 -- UPDATE
@@ -44,21 +67,89 @@ init people =
 type Msg
   = SetQuery String
   | SetTableState Table.State
-
+  | Load (Result String Stored)
+  | Reset
+  | NoOp
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
     SetQuery newQuery ->
-      ( { model | query = newQuery }
-      , Cmd.none
-      )
+      store
+        ( { model | query = newQuery }
+        , Cmd.none
+        )
 
     SetTableState newState ->
-      ( { model | tableState = newState }
+      store
+        ( { model | tableState = newState }
+        , Cmd.none
+        )
+
+    Load (Ok { tableState, query }) ->
+      ( { model | tableState = tableState, query = query }
       , Cmd.none
       )
 
+    Load (Err _) ->
+      update NoOp model
+
+    Reset ->
+      store (initModel presidents, Cmd.none)
+
+    NoOp ->
+      (model, Cmd.none)
+
+
+
+-- PERSISTENCE
+
+store : (Model, Cmd Msg) -> (Model, Cmd Msg)
+store (model, cmd) =
+  ( model
+  , Cmd.batch
+      [ putStorage (encode model)
+      , cmd
+      ]
+  )
+
+port putStorage : JE.Value -> Cmd msg
+
+port getStorage : () -> Cmd msg
+
+port fromStorage : (JD.Value -> msg) -> Sub msg
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  fromStorage (msgFromStorage (toStore model))
+
+msgFromStorage : Stored -> JD.Value -> Msg
+msgFromStorage default value =
+  value 
+    |> JD.decodeValue (decodeRaw default)
+    |> Load
+
+decodeRaw : Stored -> JD.Decoder Stored
+decodeRaw default =
+  JD.nullable decodeStored
+    |> JD.map (Maybe.withDefault default)
+
+decodeStored : JD.Decoder Stored
+decodeStored =
+  JD.map2 Stored
+    (JD.field "tableState" Table.decode)
+    (JD.field "query" JD.string)
+
+encode : Model -> JE.Value
+encode model =
+  encodeStored (toStore model)
+    
+encodeStored : Stored -> JE.Value
+encodeStored { tableState, query } =
+  JE.object
+    [ ("tableState", Table.encode tableState)
+    , ("query", JE.string query)
+    ]
 
 
 -- VIEW
@@ -75,7 +166,10 @@ view { people, tableState, query } =
   in
     div []
       [ h1 [] [ text "Birthplaces of U.S. Presidents" ]
-      , input [ placeholder "Search by Name", onInput SetQuery ] []
+      , div [ style [("display", "inline-block")] ]
+         [ input [ placeholder "Search by Name", onInput SetQuery, value query ] []
+         , button [ onClick Reset ] [ text "Reset" ]
+         ]
       , Table.view config tableState acceptablePeople
       ]
 

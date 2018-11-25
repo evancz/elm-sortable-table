@@ -9,7 +9,27 @@
 </head>
 
 <body>
-	<script type="text/javascript">Elm.Main.fullscreen();</script>
 </body>
+
+<script type="text/javascript">
+    var key = "model";
+    var app = Elm.Main.fullscreen();
+    if (app.ports !== undefined) {
+        if (app.ports.putStorage !== undefined) {
+            app.ports.putStorage.subscribe( function(json) {
+                window.localStorage.setItem(key, JSON.stringify(json))
+            });
+        }
+        if (app.ports.getStorage !== undefined  &&
+            app.ports.fromStorage !== undefined
+           ) {
+               app.ports.getStorage.subscribe( function() {
+                   app.ports.fromStorage.send(
+                       JSON.parse( window.localStorage.getItem(key) )
+                   )
+               });
+        }
+    }
+</script>
 
 </html>
