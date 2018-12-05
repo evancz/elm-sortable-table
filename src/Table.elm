@@ -1,7 +1,7 @@
 module Table exposing
   ( view
   , config, stringColumn, intColumn, floatColumn
-  , State, initialSort
+  , State, initialSort, initialReversedSort
   , Column, customColumn, veryCustomColumn
   , Sorter, unsortable, increasingBy, decreasingBy
   , increasingOrDecreasingBy, decreasingOrIncreasingBy
@@ -82,6 +82,13 @@ yachts to be sorted by length by default, you might say:
 initialSort : String -> State
 initialSort header =
   State header False
+
+
+{-| Same as initialSort, but reverse the order.
+-}
+initialReversedSort : String -> State
+initialReversedSort header =
+  State header True
 
 
 
