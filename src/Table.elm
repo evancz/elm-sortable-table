@@ -182,7 +182,7 @@ you have. Stories make it possible to design better!
 type alias Customizations data msg =
   { tableAttrs : List (Attribute msg)
   , caption : Maybe (HtmlDetails msg)
-  , thead : List (String, Status, Attribute msg) -> HtmlDetails msg
+  , thead : List (String, Status, List (Attribute msg)) -> HtmlDetails msg
   , tfoot : Maybe (HtmlDetails msg)
   , tbodyAttrs : List (Attribute msg)
   , rowAttrs : data -> List (Attribute msg)
@@ -212,13 +212,13 @@ defaultCustomizations =
   }
 
 
-simpleThead : List (String, Status, Attribute msg) -> HtmlDetails msg
+simpleThead : List (String, Status, List (Attribute msg) ) -> HtmlDetails msg
 simpleThead headers =
   HtmlDetails [] (List.map simpleTheadHelp headers)
 
 
-simpleTheadHelp : ( String, Status, Attribute msg ) -> Html msg
-simpleTheadHelp (name, status, onClick) =
+simpleTheadHelp : ( String, Status, List (Attribute msg) ) -> Html msg
+simpleTheadHelp (name, status, attributes) =
   let
     content =
       case status of
@@ -240,7 +240,7 @@ simpleTheadHelp (name, status, onClick) =
           , darkGrey (if isReversed then "↑" else "↓")
           ]
   in
-    Html.th [ onClick ] content
+    Html.th attributes content
 
 
 darkGrey : String -> Html msg
@@ -448,29 +448,29 @@ view (Config { toId, toMsg, columns, customizations }) state data =
           Html.caption attributes children :: thead :: withFoot
 
 
-toHeaderInfo : State -> (State -> msg) -> ColumnData data msg -> ( String, Status, Attribute msg )
+toHeaderInfo : State -> (State -> msg) -> ColumnData data msg -> ( String, Status, List (Attribute msg) )
 toHeaderInfo (State sortName isReversed) toMsg { name, sorter } =
   case sorter of
     None ->
-      ( name, Unsortable, onClick sortName isReversed toMsg )
+      ( name, Unsortable, [] )
 
     Increasing _ ->
-      ( name, Sortable (name == sortName), onClick name False toMsg )
+      ( name, Sortable (name == sortName), [ onClick name False toMsg ] )
 
     Decreasing _ ->
-      ( name, Sortable (name == sortName), onClick name False toMsg )
+      ( name, Sortable (name == sortName), [ onClick name False toMsg ] )
 
     IncOrDec _ ->
       if name == sortName then
-        ( name, Reversible (Just isReversed), onClick name (not isReversed) toMsg )
+        ( name, Reversible (Just isReversed), [ onClick name (not isReversed) toMsg ] )
       else
-        ( name, Reversible Nothing, onClick name False toMsg )
+        ( name, Reversible Nothing, [ onClick name False toMsg ] )
 
     DecOrInc _ ->
       if name == sortName then
-        ( name, Reversible (Just isReversed), onClick name (not isReversed) toMsg )
+        ( name, Reversible (Just isReversed), [ onClick name (not isReversed) toMsg ] )
       else
-        ( name, Reversible Nothing, onClick name False toMsg )
+        ( name, Reversible Nothing, [ onClick name False toMsg ] )
 
 
 onClick : String -> Bool -> (State -> msg) -> Attribute msg
